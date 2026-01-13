@@ -2,8 +2,15 @@
 #include <fstream>
 #include <format>
 
-# define LOG_LOADED_MESSAGE "Loaded existing log file from storage"
-# define LOG_CREATED_MESSAGE "Log file created."
+#define LOG_LOADED_MESSAGE "Loaded existing log file from storage"
+#define LOG_CREATED_MESSAGE "Log file created."
+
+#define LOG_DEBUG_COLOR_CYAN "\033[36m"
+#define LOG_INFO_COLOR_GREEN "\033[32m"
+#define LOG_WARNING_COLOR_YELLOW "\033[33m"
+#define LOG_ERROR_COLOR_RED "\033[31m"
+
+#define LOG_COLOR_RESET "\033[0m"
 
 Logger::Logger(const std::string& logFilePath) : m_logFilePath(logFilePath) {
 	if (!CheckFileExists()) {
@@ -67,25 +74,26 @@ std::string Logger::FormatTemplate(const std::string& message, LogLevel logLevel
 }
 
 void Logger::LogInfo(const std::string& message) {
-	std::string formattedMessage = FormatTemplate(message, LogLevel::Info);
+	std::string formattedMessage = LOG_INFO_COLOR_GREEN + FormatTemplate(message, LogLevel::Info);
 	WriteToFile(formattedMessage);
-	std::printf("%s\n", formattedMessage.c_str());
+	std::printf("%s%s%s\n", LOG_INFO_COLOR_GREEN, formattedMessage.c_str(), LOG_COLOR_RESET);
 }
 
 void Logger::LogError(const std::string& message) {
-	std::string formattedMessage = FormatTemplate(message, LogLevel::Error);
+	std::string formattedMessage = LOG_ERROR_COLOR_RED + FormatTemplate(message, LogLevel::Error);
 	WriteToFile(formattedMessage);
-	std::fprintf(stderr, "%s\n", formattedMessage.c_str());
+	std::printf("%s%s%s\n", LOG_ERROR_COLOR_RED, formattedMessage.c_str(), LOG_COLOR_RESET);
 }
 
 void Logger::LogWarning(const std::string& message) {
-	std::string formattedMessage = FormatTemplate(message, LogLevel::Warning);
+	std::string formattedMessage = LOG_WARNING_COLOR_YELLOW + FormatTemplate(message, LogLevel::Warning);
 	WriteToFile(formattedMessage);
-	std::printf("%s\n", formattedMessage.c_str());
+	std::printf("%s%s%s\n", LOG_WARNING_COLOR_YELLOW, formattedMessage.c_str(), LOG_COLOR_RESET);
+
 }
 
 void Logger::LogDebug(const std::string& message) {
-	std::string formattedMessage = FormatTemplate(message, LogLevel::Debug);
+	std::string formattedMessage =  FormatTemplate(message, LogLevel::Debug);
 	WriteToFile(formattedMessage);
-	std::printf("%s\n", formattedMessage.c_str());
+	std::printf("%s%s%s\n", LOG_DEBUG_COLOR_CYAN, formattedMessage.c_str(), LOG_COLOR_RESET);
 }

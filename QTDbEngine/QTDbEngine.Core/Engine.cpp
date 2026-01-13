@@ -2,6 +2,8 @@
 #include "Paths.hpp"
 #include <iostream>
 
+constexpr const char* ENGINE_INITIALIZED_MESSAGE = "Engine initialized with version: ";
+
 Engine::Engine(const std::string& version) : m_version(version) {}
 
 void Engine::Initialize() {
@@ -10,7 +12,7 @@ void Engine::Initialize() {
 
 	// Initialize logger
 	m_logger = new Logger(GetFullLogPath());
-	m_logger->LogInfo("Engine version " + m_version + " initialized.");
+	m_logger->LogInfo(ENGINE_INITIALIZED_MESSAGE + m_version);
 }
 
 Engine::~Engine() {
