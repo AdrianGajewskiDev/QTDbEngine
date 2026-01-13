@@ -42,3 +42,9 @@
 
 QTDbEngine/out/*
 QTDbEngine/.vs/*
+
+QTDbEngine/*/x64/*
+QTDbEngine/x64/*
+
+QTDbEngine/*/Logs/*
+QTDbEngine/*/Database/*
