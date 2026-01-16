@@ -48,3 +48,17 @@ QTDbEngine/x64/*
 
 QTDbEngine/*/Logs/*
 QTDbEngine/*/Database/*
+
+*.vcxproj
+/QTDbEngine/QTDbEngine.Core/QTDbEngine.Core.vcxproj.user
+/QTDbEngine/QTDbEngine/QTDbEngine.vcxproj
+/QTDbEngine/QTDbEngine.Core/QTDbEngine.Core.aps
+/QTDbEngine/QTDbEngine.Core/QTDbEngine.Core.rc
+/QTDbEngine/QTDbEngine.Core/QTDbEngine.Core.vcxproj
+/QTDbEngine/QTDbEngine/QTDbEngine.vcxproj.user
+/QTDbEngine/QTDbEngine/QTDbEngine.vcxproj.filters
+/QTDbEngine/QTDbEngine.Core/QTDbEngine.Core.vcxproj
+/QTDbEngine/QTDbEngine.Core/QTDbEngine.Core.vcxproj
+/QTDbEngine/QTDbEngine/QTDbEngine.vcxproj.user
+/QTDbEngine/QTDbEngine/QTDbEngine.vcxproj.filters
+/QTDbEngine/QTDbEngine/QTDbEngine.vcxproj
