@@ -8,36 +8,47 @@ const std::string ENGINE_VERSION = "0.0.1";
 CLIMenu* InitializeMenu(Engine& engine)
 {
 	MenuPage rootPage(std::vector<MenuEntry> {
-			MenuEntry("1.List Databases", std::nullopt, std::nullopt),
-				MenuEntry("2.Create New Database", [&engine]() {
-					std::cout << "Enter database Name:";
-					std::string dbName;
-					std::cin >> dbName;
+			MenuEntry("1.List Databases", [&engine]() {
+				const std::vector<std::string> databases = engine.ListDatabases();
 
-					DbCreationResult dbCreationResult = engine.CreateNewDatabase(dbName);
+				if (databases.empty()) {
+					std::cout << "No Databases created yet." << std::endl;
+					return;
+				}
 
-					if (dbCreationResult == DbCreationResult::CREATED) {
-						std::cout << "Database have been created successfully." << std::endl;
-						return;
-					}
+				for (std::string db : databases)
+				{
+					std::cout << "-- " << db << std::endl;
+				}
+			}, std::nullopt),
+			MenuEntry("2.Create New Database", [&engine]() {
+				std::cout << "Enter database Name:";
+				std::string dbName;
+				std::cin >> dbName;
 
-					if (dbCreationResult == DbCreationResult::FAILED) {
-						std::cout << "Unknown Error have occured. Please try again." << std::endl;
-						return;
-					}
+				DbCreationResult dbCreationResult = engine.CreateNewDatabase(dbName);
 
-					if (dbCreationResult == DbCreationResult::FAILED_DB_NAME_TAKEN) {
-						std::cout << "Database " << dbName << " already exists." << std::endl;
-						return;
-					}
-				}, std::nullopt),
+				if (dbCreationResult == DbCreationResult::CREATED) {
+					std::cout << "Database have been created successfully." << std::endl;
+					return;
+				}
+
+				if (dbCreationResult == DbCreationResult::FAILED) {
+					std::cout << "Unknown Error have occured. Please try again." << std::endl;
+					return;
+				}
+
+				if (dbCreationResult == DbCreationResult::FAILED_DB_NAME_TAKEN) {
+					std::cout << "Database " << dbName << " already exists." << std::endl;
+					return;
+				}
+			}, std::nullopt),
 			MenuEntry("3.Execute SQL", std::nullopt, std::nullopt),
 			MenuEntry("4.Exit", []() {
 					exit(0);
 				},
 				std::nullopt
 			)
-
 	});
 
 	CLIMenu cliMenu(rootPage);

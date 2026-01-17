@@ -32,6 +32,22 @@ DbCreationResult Engine::CreateNewDatabase(std::string& dbName)
 	return DbCreationResult::CREATED;
 }
 
+std::vector<std::string> Engine::ListDatabases()
+{
+	std::vector<std::string> databases;
+
+	for (auto file : std::filesystem::directory_iterator(GetRootDatabasePath()))
+	{
+		if (file.is_directory())
+		{
+			databases.push_back(file.path().filename().string());
+		}
+	}
+
+	return databases;
+}
+
+
 Engine::~Engine() {
 	delete m_logger;
 }
