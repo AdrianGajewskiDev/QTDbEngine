@@ -24,12 +24,12 @@ DbCreationResult Engine::CreateNewDatabase(std::string& dbName)
 		return DbCreationResult::FAILED_DB_NAME_TAKEN;
 	}
 
-	if (std::filesystem::create_directories(fullNewDbPath))
+	if (!std::filesystem::create_directories(fullNewDbPath))
 	{
-		return DbCreationResult::CREATED;
+		return DbCreationResult::FAILED;
 	}
 
-	return DbCreationResult::FAILED;
+	return DbCreationResult::CREATED;
 }
 
 Engine::~Engine() {
