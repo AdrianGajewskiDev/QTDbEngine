@@ -27,3 +27,7 @@ std::string GetFullLogPath() {
 std::string GetFullDatabasePath() {
 	return std::filesystem::path(DB_STORAGE_PATH).append(DB_FILE_NAME).string();
 }
+
+std::string GetRootDatabasePath() {
+	return std::filesystem::path(DB_STORAGE_PATH).string();
+}
