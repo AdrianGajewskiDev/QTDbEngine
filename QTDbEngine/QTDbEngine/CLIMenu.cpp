@@ -18,6 +18,13 @@ void CLIMenu::ShowMenu()
 		int choice;
 		std::cin >> choice;
 
+		if (std::cin.fail()) {
+			std::cout << "Invalid option. Try again!" << std::endl;
+			std::cin.clear();                    // Clear error flags
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');  // Discard bad input
+			continue;
+		}
+
 		if (choice == 9) {
 			if (m_MenuPagesStack.size() > 1) {
 				m_MenuPagesStack.pop();

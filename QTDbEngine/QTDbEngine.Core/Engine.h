@@ -1,6 +1,7 @@
 #pragma once
-#include "Logger.h"
 #include <vector>
+#include "Logger.h"
+#include "Tokenizer.h"
 
 enum class DbCreationResult {
 	CREATED = 0,
@@ -8,6 +9,10 @@ enum class DbCreationResult {
 	FAILED
 };
 
+enum class QueryResult {
+	OK = 0,
+	TOKENIZER_ERROR = 1
+};
 
 class Engine {
 public:
@@ -16,8 +21,10 @@ public:
 public:
 	void Initialize();
 	DbCreationResult CreateNewDatabase(std::string& dbName);
+	QueryResult ExecuteRawSql(std::string& rawSql);
 	std::vector<std::string> ListDatabases();
 private:
 	std::string m_version;
 	Logger* m_logger;
+	Tokenizer* m_tokenizer;
 };

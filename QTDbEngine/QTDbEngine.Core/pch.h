@@ -11,5 +11,6 @@
 #include "framework.h"
 #include "Engine.h"
 #include "Logger.h"
+#include "Tokenizer.h"
 
 #endif //PCH_H

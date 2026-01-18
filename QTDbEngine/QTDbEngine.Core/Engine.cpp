@@ -14,6 +14,12 @@ void Engine::Initialize() {
 	// Initialize logger
 	m_logger = new Logger(GetFullLogPath());
 	m_logger->LogInfo(ENGINE_INITIALIZED_MESSAGE + m_version);
+
+	m_tokenizer = new Tokenizer();
+}
+
+Engine::~Engine() {
+	delete m_logger;
 }
 
 DbCreationResult Engine::CreateNewDatabase(std::string& dbName)
@@ -47,7 +53,17 @@ std::vector<std::string> Engine::ListDatabases()
 	return databases;
 }
 
+QueryResult Engine::ExecuteRawSql(std::string& rawSql) 
+{
+	m_logger->LogDebug("Parsing sql query...");
+	std::expected<std::vector<Token>, TokenizerError> tokens = m_tokenizer->Tokenize(rawSql);
 
-Engine::~Engine() {
-	delete m_logger;
+	if (!tokens) {
+		m_logger->LogWarning("Invalid Query");
+		return QueryResult::TOKENIZER_ERROR;
+	}
+
+	m_logger->LogDebug("Query parsed successfully");
+
+	return QueryResult::OK;
 }
