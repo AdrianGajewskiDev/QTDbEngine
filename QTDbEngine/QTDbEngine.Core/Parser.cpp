@@ -85,7 +85,7 @@ std::expected<std::map<std::string, TokenValue>, ParserError> Parser::ParseCreat
 				return std::unexpected(ParserError::FAILED_TO_PARSE);
 			}
 
-			std::vector<std::string> dbAndTableName = split(std::get<std::string>(thirdToken.Value), '.');
+			std::vector<std::string> dbAndTableName = Split(std::get<std::string>(thirdToken.Value), '.');
 
 			if (dbAndTableName.size() != 2) {
 				return std::unexpected(ParserError::FAILED_TO_PARSE);
@@ -107,7 +107,7 @@ std::expected<std::map<std::string, TokenValue>, ParserError> Parser::ParseCreat
 
 				Token& currToken = columnTokens.value()[i];
 				std::vector<Token> tempTokens;
-				while (!isVariantType(currToken.Value, SQLOperator::COMMA))
+				while (!IsVariantType(currToken.Value, SQLOperator::COMMA))
 				{
 					tempTokens.push_back(currToken);
 					step++;

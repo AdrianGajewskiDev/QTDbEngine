@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <cstddef>
 
-inline std::vector<std::string> split(const std::string& str, char delimiter) {
+inline std::vector<std::string> Split(const std::string& str, char delimiter) {
     auto view = str | std::views::split(delimiter)
         | std::views::transform([](auto&& range) {
         return std::string(range.begin(), range.end());
@@ -53,7 +53,7 @@ inline std::ptrdiff_t GetTokenPosition(size_t occurrence, T token, const std::ve
 }
 
 template<typename T>
-bool isVariantType(const auto& variant, const T& value) {
+bool IsVariantType(const auto& variant, const T& value) {
     auto* ptr = std::get_if<T>(&variant);
     return ptr && *ptr == value;
 }
