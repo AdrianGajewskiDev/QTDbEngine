@@ -16,10 +16,13 @@ void Engine::Initialize() {
 	m_logger->LogInfo(ENGINE_INITIALIZED_MESSAGE + m_version);
 
 	m_tokenizer = new Tokenizer();
+	m_parser = new Parser();
 }
 
 Engine::~Engine() {
 	delete m_logger;
+	delete m_tokenizer;
+	delete m_parser;
 }
 
 DbCreationResult Engine::CreateNewDatabase(std::string& dbName)
@@ -65,5 +68,39 @@ QueryResult Engine::ExecuteRawSql(std::string& rawSql)
 
 	m_logger->LogDebug("Query parsed successfully");
 
+	std::expected<ParserResult, ParserError> parserResult = m_parser->ParseTokens(tokens.value());
+
+	if (!parserResult) {
+		m_logger->LogWarning("Failed to parse query");
+		return QueryResult::PARSER_ERROR;
+	}
+
+	ProcessParserResult(parserResult.value());
+
 	return QueryResult::OK;
+}
+
+void Engine::ProcessParserResult(ParserResult& parserResult)
+{
+	switch (parserResult.Command) {
+		case DatabaseCommand::CREATE_DATABASE:
+		{
+			std::string dbName = std::get<std::string>(parserResult.Params.at("db_name"));
+			m_logger->LogDebug("Creating new database: " + dbName);
+			CreateNewDatabase(dbName);
+		}; break;
+		case DatabaseCommand::CREATE_TABLE:
+		{
+			std::string dbName = std::get<std::string>(parserResult.Params.at("db_name"));
+			std::string tableName = std::get<std::string>(parserResult.Params.at("table_name"));
+			std::vector<Column> columns = std::get<std::vector<Column>>(parserResult.Params.at("columns_definition"));
+			m_logger->LogDebug("Creating new table: " + dbName);
+			CreateNewTable(dbName, tableName, columns);
+		}; break;
+	}
+}
+
+DbCreationResult Engine::CreateNewTable(std::string& dbName, std::string tableName, std::vector<Column>& columns)
+{
+	return DbCreationResult::CREATED;
 }

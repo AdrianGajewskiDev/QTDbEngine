@@ -1,13 +1,18 @@
 #include "pch.h"
 
-const std::string KEYWORDS[7] = {
+const std::string KEYWORDS[12] = {
 	"CREATE",
 	"TABLE",
 	"SELECT",
 	"FROM",
 	"INSERT",
 	"INTO",
-	"VALUES"
+	"VALUES",
+	"DATABASE",
+	"VARCHAR",
+	"INT",
+	"PRIMARY",
+	"KEY"
 };
 
 const char OPERATORS[4] = {
@@ -78,7 +83,7 @@ std::expected<std::vector<Token>, TokenizerError> Tokenizer::Tokenize(std::strin
 			substring += currChar;
 		}
 
-		std::optional<std::string> keywordFound = CheckKeywords(substring);
+		std::optional<SQLKeyword> keywordFound = CheckKeywords(substring);
 
 		if (keywordFound) {
 			tokens.push_back(Token{ .Type = SQLTokenType::KEYWORD, .Value = keywordFound.value()});
@@ -133,12 +138,27 @@ std::expected<std::tuple<int, uint64_t>, TokenizerError> Tokenizer::ReadNumber(s
 }
 
 
-std::optional<std::string> Tokenizer::CheckKeywords(std::string& substring)
+std::optional<SQLKeyword> Tokenizer::CheckKeywords(std::string& substring)
 {
+	const std::map<std::string, SQLKeyword> keywordMap = {
+		{"CREATE", SQLKeyword::CREATE},
+		{"TABLE", SQLKeyword::TABLE},
+		{"SELECT", SQLKeyword::SELECT},
+		{"FROM", SQLKeyword::FROM},
+		{"INSERT", SQLKeyword::INSERT},
+		{"INTO", SQLKeyword::INTO},
+		{"VALUES", SQLKeyword::VALUES},
+		{"DATABASE", SQLKeyword::DATABASE},
+		{"INT", SQLKeyword::INT},
+		{"PRIMARY", SQLKeyword::PRIMARY},
+		{"VARCHAR", SQLKeyword::VARCHAR},
+		{"KEY", SQLKeyword::KEY},
+	};
+
 	for (auto keyword : KEYWORDS) {
 		if (substring == keyword)
 		{
-			return keyword;
+			return keywordMap.at(keyword);
 		}
 	}
 
