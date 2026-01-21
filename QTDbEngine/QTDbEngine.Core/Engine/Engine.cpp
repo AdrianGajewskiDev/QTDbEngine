@@ -1,5 +1,5 @@
-#include "pch.h"
-#include "Paths.hpp"
+#include "Engine.h"
+#include "../Utils/Paths.hpp"
 #include <iostream>
 #include <filesystem>
 
@@ -15,30 +15,29 @@ void Engine::Initialize() {
 	m_logger = new Logger(GetFullLogPath());
 	m_logger->LogInfo(ENGINE_INITIALIZED_MESSAGE + m_version);
 
-	m_tokenizer = new Tokenizer();
-	m_parser = new Parser();
+	m_interpreter = new Interpreter();
+
 }
 
 Engine::~Engine() {
 	delete m_logger;
-	delete m_tokenizer;
-	delete m_parser;
+	delete m_interpreter;
 }
 
-DbCreationResult Engine::CreateNewDatabase(std::string& dbName)
+DatabaseQueryStatusCode Engine::CreateNewDatabase(std::string& dbName)
 {
 	const std::string fullNewDbPath = std::filesystem::path(GetRootDatabasePath()).append(dbName).string();
 	if (std::filesystem::exists(fullNewDbPath))
 	{
-		return DbCreationResult::FAILED_DB_NAME_TAKEN;
+		return DatabaseQueryStatusCode::DATABASE_ALREADY_EXISTS;
 	}
 
 	if (!std::filesystem::create_directories(fullNewDbPath))
 	{
-		return DbCreationResult::FAILED;
+		return DatabaseQueryStatusCode::FAILED;
 	}
 
-	return DbCreationResult::CREATED;
+	return DatabaseQueryStatusCode::OK;
 }
 
 std::vector<std::string> Engine::ListDatabases()
@@ -56,38 +55,25 @@ std::vector<std::string> Engine::ListDatabases()
 	return databases;
 }
 
-QueryResult Engine::ExecuteRawSql(std::string& rawSql) 
+DatabaseQueryStatusCode Engine::ExecuteRawSql(std::string& rawSql)
 {
-	m_logger->LogDebug("Parsing sql query...");
-	std::expected<std::vector<Token>, TokenizerError> tokens = m_tokenizer->Tokenize(rawSql);
-
-	if (!tokens) {
-		m_logger->LogWarning("Invalid Query");
-		return QueryResult::TOKENIZER_ERROR;
-	}
-
-	m_logger->LogDebug("Query parsed successfully");
-
-	std::expected<ParserResult, ParserError> parserResult = m_parser->ParseTokens(tokens.value());
-
-	if (!parserResult) {
+	auto interpreterResult = m_interpreter->InterpretQuery(rawSql);
+	if (!interpreterResult) {
 		m_logger->LogWarning("Failed to parse query");
-		return QueryResult::PARSER_ERROR;
+		return DatabaseQueryStatusCode::INVALID_QUERY;
 	}
 
-	ProcessParserResult(parserResult.value());
-
-	return QueryResult::OK;
+	return ProcessParserResult(interpreterResult.value());
 }
 
-void Engine::ProcessParserResult(ParserResult& parserResult)
+DatabaseQueryStatusCode Engine::ProcessParserResult(InterpreterResult& parserResult)
 {
 	switch (parserResult.Command) {
 		case DatabaseCommand::CREATE_DATABASE:
 		{
 			std::string dbName = std::get<std::string>(parserResult.Params.at("db_name"));
 			m_logger->LogDebug("Creating new database: " + dbName);
-			CreateNewDatabase(dbName);
+			return CreateNewDatabase(dbName);
 		}; break;
 		case DatabaseCommand::CREATE_TABLE:
 		{
@@ -95,12 +81,21 @@ void Engine::ProcessParserResult(ParserResult& parserResult)
 			std::string tableName = std::get<std::string>(parserResult.Params.at("table_name"));
 			std::vector<Column> columns = std::get<std::vector<Column>>(parserResult.Params.at("columns_definition"));
 			m_logger->LogDebug("Creating new table: " + dbName);
-			CreateNewTable(dbName, tableName, columns);
+			return CreateNewTable(dbName, tableName, columns);
 		}; break;
 	}
 }
 
-DbCreationResult Engine::CreateNewTable(std::string& dbName, std::string tableName, std::vector<Column>& columns)
+DatabaseQueryStatusCode Engine::CreateNewTable(std::string& dbName, std::string tableName, std::vector<Column>& columns)
 {
-	return DbCreationResult::CREATED;
+	const std::vector<std::string> databases = ListDatabases();
+
+	if (std::find(databases.begin(), databases.end(), dbName) == databases.end())
+	{
+		return DatabaseQueryStatusCode::DATABASE_NOT_EXISTS;
+	}
+
+	Table table = { .DatabaseName = dbName, .TableName = tableName, .Columns = columns };
+
+	return SaveTable(table);
 }

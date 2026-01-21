@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "Tokenizer.h"
 
 const std::string KEYWORDS[12] = {
 	"CREATE",
@@ -28,7 +28,7 @@ std::expected<std::vector<Token>, TokenizerError> Tokenizer::Tokenize(std::strin
 
 	for (int i = 0; i < rawSql.size(); i++)
 	{
-		auto currChar = rawSql[i];
+		const auto& currChar = rawSql[i];
 
 		if (currChar == '"') {
 			std::expected<std::tuple<int, std::string>, TokenizerError> _stringToken = ReadString(rawSql, i);
@@ -108,7 +108,7 @@ std::expected<std::tuple<int, std::string>, TokenizerError> Tokenizer::ReadStrin
 	int steps = 0;
 	while (currentIndex < rawSql.length()) {
 		steps++;
-		auto currChar = rawSql[currentIndex];
+		const auto& currChar = rawSql[currentIndex];
 			
 		if (currChar == '"') {
 			return std::make_tuple(steps, substring);
@@ -129,7 +129,7 @@ std::expected<std::tuple<int, uint64_t>, TokenizerError> Tokenizer::ReadNumber(s
 	int steps = 0;
 	while (std::isdigit(rawSql[currentIndex])) {
 		steps++;
-		auto currChar = rawSql[currentIndex];
+		const auto& currChar = rawSql[currentIndex];
 		substring += currChar;
 		currentIndex++;
 	}

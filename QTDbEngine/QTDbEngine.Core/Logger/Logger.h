@@ -1,6 +1,5 @@
 #pragma once
-#include "pch.h"
-#include "LogLevel.hpp"
+#include "../Logger/LogLevel.hpp"
 
 class Logger {
 public:

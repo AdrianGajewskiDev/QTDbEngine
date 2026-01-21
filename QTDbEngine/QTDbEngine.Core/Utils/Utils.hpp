@@ -1,11 +1,11 @@
 #pragma once
-#include "pch.h"
 #include <ranges>
 #include <string>
 #include <vector>
 #include <stack>
 #include <type_traits>
 #include <cstddef>
+#include "../Interpreter/Tokenizer.h"
 
 inline std::vector<std::string> Split(const std::string& str, char delimiter) {
     auto view = str | std::views::split(delimiter)

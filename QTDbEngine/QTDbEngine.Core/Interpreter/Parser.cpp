@@ -1,31 +1,31 @@
-#include "pch.h"
-#include "Utils.hpp"
+#include "Parser.h"
+#include "../Utils/Utils.hpp"
 
-std::expected<ParserResult, ParserError> Parser::ParseTokens(std::vector<Token>& inputTokens)
+std::expected<InterpreterResult, InterpreterError> Parser::ParseTokens(std::vector<Token>& inputTokens)
 {
-	auto firstClause = inputTokens[0];
+	const auto& firstClause = inputTokens[0];
 	if (firstClause.Type != SQLTokenType::KEYWORD) {
-		return std::unexpected(ParserError::FAILED_TO_PARSE);
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 	}
 
 	SQLKeyword keyword = std::get<SQLKeyword>(firstClause.Value);
 	switch (keyword) {
 		case SQLKeyword::CREATE: return ProcessCreateClause(inputTokens); break;
 		case SQLKeyword::SELECT: return ProcessSelectClause(inputTokens); break;
-		default: return std::unexpected(ParserError::FAILED_TO_PARSE);
+		default: return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 	}
 }
 
-std::expected<ParserResult, ParserError> Parser::ProcessCreateClause(std::vector<Token>& inputTokens)
+std::expected<InterpreterResult, InterpreterError> Parser::ProcessCreateClause(std::vector<Token>& inputTokens)
 {
 	if (inputTokens.empty()) {
-		return std::unexpected(ParserError::FAILED_TO_PARSE);
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 	}
 
-	auto secondToken = inputTokens[1];
+	const auto& secondToken = inputTokens[1];
 
 	if (secondToken.Type != SQLTokenType::KEYWORD) {
-		return std::unexpected(ParserError::FAILED_TO_PARSE);
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 	}
 
 	DatabaseCommand command;
@@ -33,25 +33,25 @@ std::expected<ParserResult, ParserError> Parser::ProcessCreateClause(std::vector
 	switch (std::get<SQLKeyword>(secondToken.Value)) {
 		case SQLKeyword::DATABASE: command = DatabaseCommand::CREATE_DATABASE; break;
 		case SQLKeyword::TABLE: command = DatabaseCommand::CREATE_TABLE; break;
-		default: return std::unexpected(ParserError::FAILED_TO_PARSE); break;
+		default: return std::unexpected(InterpreterError::FAILED_TO_PARSE); break;
 	}
 
-	std::expected<std::map<std::string, TokenValue>, ParserError> params = ParseCreateClauseParams(command, inputTokens);
+	std::expected<std::map<std::string, TokenValue>, InterpreterError> params = ParseCreateClauseParams(command, inputTokens);
 	
 	if (!params) {
-		return std::unexpected(ParserError::FAILED_TO_PARSE);
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 	}
 
-	return ParserResult{ .Command = command, .Params = params.value()};
+	return InterpreterResult{ .Command = command, .Params = params.value()};
 }
 
-std::expected<ParserResult, ParserError> Parser::ProcessSelectClause(std::vector<Token>& inputTokens)
+std::expected<InterpreterResult, InterpreterError> Parser::ProcessSelectClause(std::vector<Token>& inputTokens)
 {
-	return std::unexpected(ParserError::FAILED_TO_PARSE);
+	return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 }
 
 
-std::expected<std::map<std::string, TokenValue>, ParserError> Parser::ParseCreateClauseParams(DatabaseCommand& command, std::vector<Token>& inputTokens)
+std::expected<std::map<std::string, TokenValue>, InterpreterError> Parser::ParseCreateClauseParams(DatabaseCommand& command, std::vector<Token>& inputTokens)
 {
 	switch (command)
 	{
@@ -59,12 +59,12 @@ std::expected<std::map<std::string, TokenValue>, ParserError> Parser::ParseCreat
 		{
 			if (inputTokens.size() != 3)
 			{
-				return std::unexpected(ParserError::FAILED_TO_PARSE);
+				return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 			}
 
-			auto thirdToken = inputTokens[2];
+			const auto& thirdToken = inputTokens[2];
 			if (thirdToken.Type != SQLTokenType::IDENTIFIER) {
-				return std::unexpected(ParserError::FAILED_TO_PARSE);
+				return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 			}
 
 			return std::map<std::string, TokenValue> {
@@ -77,24 +77,24 @@ std::expected<std::map<std::string, TokenValue>, ParserError> Parser::ParseCreat
 			// At least one column definition
 			if (inputTokens.size() < 7)
 			{
-				return std::unexpected(ParserError::FAILED_TO_PARSE);
+				return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 			}
 
-			auto thirdToken = inputTokens[2];
+			const auto& thirdToken = inputTokens[2];
 			if (thirdToken.Type != SQLTokenType::IDENTIFIER) {
-				return std::unexpected(ParserError::FAILED_TO_PARSE);
+				return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 			}
 
 			std::vector<std::string> dbAndTableName = Split(std::get<std::string>(thirdToken.Value), '.');
 
 			if (dbAndTableName.size() != 2) {
-				return std::unexpected(ParserError::FAILED_TO_PARSE);
+				return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 			}
 
 			std::string dbName = dbAndTableName[0];
 			std::string tableName = dbAndTableName[1];
 
-			std::expected<std::vector<Token>, ParserError> columnTokens = ExtractBetweenParenthesis(1, inputTokens);
+			std::expected<std::vector<Token>, InterpreterError> columnTokens = ExtractBetweenParenthesis(1, inputTokens);
 
 			if (!columnTokens) {
 				return std::unexpected(columnTokens.error());
@@ -135,11 +135,11 @@ std::expected<std::map<std::string, TokenValue>, ParserError> Parser::ParseCreat
 				{"columns_definition", columnDefinitions}
 			};
 		}; break;
-		default: return std::unexpected(ParserError::FAILED_TO_PARSE); break;
+		default: return std::unexpected(InterpreterError::FAILED_TO_PARSE); break;
 	}
 }
 
-std::expected<std::vector<Token>, ParserError> Parser::ExtractBetweenParenthesis(int position, std::vector<Token>& inputTokens)
+std::expected<std::vector<Token>, InterpreterError> Parser::ExtractBetweenParenthesis(int position, std::vector<Token>& inputTokens)
 {
 	std::ptrdiff_t firstOpenParenthesis = GetTokenPosition<SQLOperator>(1, SQLOperator::OPEN_CURLY, inputTokens);
 	std::ptrdiff_t firstCloseParenthesis = GetTokenPosition<SQLOperator>(1, SQLOperator::CLOSING_CURLY, inputTokens);
@@ -148,7 +148,7 @@ std::expected<std::vector<Token>, ParserError> Parser::ExtractBetweenParenthesis
 	size_t closeIdx = static_cast<size_t>(firstCloseParenthesis);
 
 	if (openIdx >= inputTokens.size() || closeIdx > inputTokens.size() || openIdx >= closeIdx) {
-		return std::unexpected(ParserError::FAILED_TO_PARSE);
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 	}
 
 	return std::vector<Token>(inputTokens.begin() + openIdx + 1, inputTokens.begin() + closeIdx);

@@ -1,6 +1,7 @@
-#include "pch.h"
 #include <fstream>
 #include <format>
+
+#include "../Logger/Logger.h"
 
 #define LOG_LOADED_MESSAGE "Loaded existing log file from storage"
 #define LOG_CREATED_MESSAGE "Log file created."

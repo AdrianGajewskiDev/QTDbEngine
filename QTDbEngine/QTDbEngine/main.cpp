@@ -1,7 +1,8 @@
-#include "pch.h"
+#include "./Engine/Engine.h"
 #include <iostream>
 #include "CLIMenu.h"
 #include <memory>
+#include "./Status/StatusCodes.h"
 
 const std::string ENGINE_VERSION = "0.0.1";
 
@@ -26,19 +27,19 @@ CLIMenu* InitializeMenu(Engine& engine)
 			std::string dbName;
 			std::cin >> dbName;
 
-			DbCreationResult dbCreationResult = engine.CreateNewDatabase(dbName);
+			DatabaseQueryStatusCode dbCreationResult = engine.CreateNewDatabase(dbName);
 
-			if (dbCreationResult == DbCreationResult::CREATED) {
+			if (dbCreationResult == DatabaseQueryStatusCode::OK) {
 				std::cout << "Database have been created successfully." << std::endl;
 				return;
 			}
 
-			if (dbCreationResult == DbCreationResult::FAILED) {
+			if (dbCreationResult == DatabaseQueryStatusCode::FAILED) {
 				std::cout << "Unknown Error have occured. Please try again." << std::endl;
 				return;
 			}
 
-			if (dbCreationResult == DbCreationResult::FAILED_DB_NAME_TAKEN) {
+			if (dbCreationResult == DatabaseQueryStatusCode::DATABASE_ALREADY_EXISTS) {
 				std::cout << "Database " << dbName << " already exists." << std::endl;
 				return;
 			}
@@ -48,14 +49,14 @@ CLIMenu* InitializeMenu(Engine& engine)
 			std::cout << "Enter your sql here: ";
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
 			std::getline(std::cin, sql);
-			QueryResult queryResult = engine.ExecuteRawSql(sql);
+			DatabaseQueryStatusCode queryResult = engine.ExecuteRawSql(sql);
 
-			if (queryResult == QueryResult::OK) {
+			if (queryResult == DatabaseQueryStatusCode::OK) {
 				std::cout << "Query executed successfully!" << std::endl;
 				return;
 			}
 
-			if (queryResult == QueryResult::TOKENIZER_ERROR) {
+			if (queryResult == DatabaseQueryStatusCode::INVALID_QUERY) {
 				std::cout << "Failed to interpret query!" << std::endl;
 				return;
 			}
