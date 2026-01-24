@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <ranges>
 #include "../Utils/Utils.hpp"
 
 std::expected<InterpreterResult, InterpreterError> Parser::ParseTokens(std::vector<Token>& inputTokens)
@@ -36,7 +37,7 @@ std::expected<InterpreterResult, InterpreterError> Parser::ProcessCreateClause(s
 		default: return std::unexpected(InterpreterError::FAILED_TO_PARSE); break;
 	}
 
-	std::expected<std::map<std::string, TokenValue>, InterpreterError> params = ParseCreateClauseParams(command, inputTokens);
+	std::expected<std::map<std::string, std::variant<TokenValue, std::vector<TokenValue>>>, InterpreterError> params = ParseCreateClauseParams(command, inputTokens);
 	
 	if (!params) {
 		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
@@ -47,11 +48,37 @@ std::expected<InterpreterResult, InterpreterError> Parser::ProcessCreateClause(s
 
 std::expected<InterpreterResult, InterpreterError> Parser::ProcessSelectClause(std::vector<Token>& inputTokens)
 {
-	return std::unexpected(InterpreterError::FAILED_TO_PARSE);
+	const auto& selectColumnsTokens = ExtractBetweenKeywords(SQLKeyword::SELECT, SQLKeyword::FROM, inputTokens);
+
+	if (!selectColumnsTokens) {
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
+	}
+
+	const size_t step = selectColumnsTokens.value().size();
+
+	const auto& dbIndetifierTokens = inputTokens[step + 2];
+
+	std::vector<std::string> dbAndTableName = Split(std::get<std::string>(dbIndetifierTokens.Value), '.');
+
+	if (dbAndTableName.size() != 2) {
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
+	}
+
+	std::string dbName = dbAndTableName[0];
+	std::string tableName = dbAndTableName[1];
+
+	auto selectedColumns = selectColumnsTokens.value() | std::views::transform([](const Token& p) { return p.Value; }) | std::ranges::to<std::vector>();
+
+	return InterpreterResult{ .Command = DatabaseCommand::SELECT, .Params = std::map<std::string, std::variant<TokenValue, std::vector<TokenValue>>>
+	{
+		{"db_name", dbName},
+		{"table_name", tableName},
+		{"selected_columns", selectedColumns}
+	}};
 }
 
 
-std::expected<std::map<std::string, TokenValue>, InterpreterError> Parser::ParseCreateClauseParams(DatabaseCommand& command, std::vector<Token>& inputTokens)
+std::expected<std::map<std::string, std::variant<TokenValue, std::vector<TokenValue>>>, InterpreterError> Parser::ParseCreateClauseParams(DatabaseCommand& command, std::vector<Token>& inputTokens)
 {
 	switch (command)
 	{
@@ -67,7 +94,7 @@ std::expected<std::map<std::string, TokenValue>, InterpreterError> Parser::Parse
 				return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 			}
 
-			return std::map<std::string, TokenValue> {
+			return std::map<std::string, std::variant<TokenValue, std::vector<TokenValue>>> {
 				{"db_name", thirdToken.Value}
 			};
 		}; break;
@@ -129,7 +156,7 @@ std::expected<std::map<std::string, TokenValue>, InterpreterError> Parser::Parse
 				i += step;
 			}
 
-			return std::map<std::string, TokenValue> {
+			return std::map<std::string, std::variant<TokenValue, std::vector<TokenValue>>> {
 				{"db_name", dbName},
 				{"table_name", tableName},
 				{"columns_definition", columnDefinitions}
@@ -146,6 +173,21 @@ std::expected<std::vector<Token>, InterpreterError> Parser::ExtractBetweenParent
 
 	size_t openIdx = static_cast<size_t>(firstOpenParenthesis);
 	size_t closeIdx = static_cast<size_t>(firstCloseParenthesis);
+
+	if (openIdx >= inputTokens.size() || closeIdx > inputTokens.size() || openIdx >= closeIdx) {
+		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
+	}
+
+	return std::vector<Token>(inputTokens.begin() + openIdx + 1, inputTokens.begin() + closeIdx);
+}
+
+std::expected<std::vector<Token>, InterpreterError> Parser::ExtractBetweenKeywords(SQLKeyword from, SQLKeyword to, std::vector<Token>& inputTokens)
+{
+	std::ptrdiff_t firstFrom = GetTokenPosition<SQLKeyword>(1, from, inputTokens);
+	std::ptrdiff_t firstTo = GetTokenPosition<SQLKeyword>(1, to, inputTokens);
+
+	size_t openIdx = static_cast<size_t>(firstFrom);
+	size_t closeIdx = static_cast<size_t>(firstTo);
 
 	if (openIdx >= inputTokens.size() || closeIdx > inputTokens.size() || openIdx >= closeIdx) {
 		return std::unexpected(InterpreterError::FAILED_TO_PARSE);

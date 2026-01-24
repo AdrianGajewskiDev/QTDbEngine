@@ -8,9 +8,9 @@ enum class DatabaseQueryStatusCode {
 	INVALID_QUERY = 2,
 
 	// Resource Taken
-	DATABASE_ALREADY_EXISTS,
-	TABLE_ALREADY_EXISTS,
+	DATABASE_ALREADY_EXISTS = 3,
+	TABLE_ALREADY_EXISTS = 4,
 
 	// Resource Not exists
-	DATABASE_NOT_EXISTS
+	DATABASE_NOT_EXISTS = 5
 };

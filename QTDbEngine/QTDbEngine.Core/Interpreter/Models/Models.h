@@ -38,7 +38,7 @@ enum class TokenizerError {
 	EXPECTED_CHAR = 1
 };
 
-using TokenValue = std::variant<std::string, SQLKeyword, SQLOperator, uint64_t, char, std::vector<Column>>;
+using TokenValue = std::variant<std::string, SQLKeyword, SQLOperator, uint64_t, char, std::vector<Column>, const char*>;
 
 enum class DatabaseCommand {
 	CREATE_DATABASE = 0,
@@ -55,6 +55,23 @@ enum class InterpreterError {
 
 struct InterpreterResult {
 	DatabaseCommand Command;
-	std::map <std::string, TokenValue> Params;
+	std::map <std::string, std::variant<TokenValue, std::vector<TokenValue>>> Params;
+
+	template<typename T>
+	inline std::optional<T> GetParams(const std::string& key) const
+	{
+		auto it = Params.find(key);
+		if (it == Params.end()) {
+			return std::nullopt;
+		}
+
+		if (auto* tokenPtr = std::get_if<TokenValue>(&it->second)) {
+			if (auto* valuePtr = std::get_if<T>(tokenPtr)) {
+				return *valuePtr;
+			}
+		}
+
+		return std::nullopt;
+	}
 };
 

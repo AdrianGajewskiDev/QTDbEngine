@@ -66,6 +66,18 @@
     <ClInclude Include="Interpreter\Models\Models.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Binary\Writer\BinaryWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Binary\Converter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Binary\Reader\BinaryReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Binary\Layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Engine.cpp">
@@ -87,6 +99,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Interpreter\Interpreter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Binary\Version.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Binary\Writer\BinaryWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -12,13 +12,13 @@ DatabaseQueryStatusCode DatabaseStorageLayer::SaveTable(Table& table)
 		return DatabaseQueryStatusCode::TABLE_ALREADY_EXISTS;
 	}
 
-	std::ofstream tableFileStream(tableFilePath);
+	std::ofstream tableFileStream(tableFilePath, std::ios::binary);
 
 	if (!tableFileStream.is_open()) {
 		return DatabaseQueryStatusCode::FAILED;
 	}
 
-	tableFileStream << "Test";
+	m_binaryWriter->WriteTableHeader(tableFileStream, table.TableName);
 
 	tableFileStream.close();
 }

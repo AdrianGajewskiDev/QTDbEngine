@@ -16,7 +16,8 @@ private:
 	std::expected<InterpreterResult, InterpreterError> ProcessCreateClause(std::vector<Token>& inputTokens);
 	std::expected<InterpreterResult, InterpreterError> ProcessSelectClause(std::vector<Token>& inputTokens);
 
-	std::expected<std::map<std::string, TokenValue>, InterpreterError> ParseCreateClauseParams(DatabaseCommand& command, std::vector<Token>& inputTokens);
+	std::expected<std::map<std::string, std::variant<TokenValue, std::vector<TokenValue>>>, InterpreterError> ParseCreateClauseParams(DatabaseCommand& command, std::vector<Token>& inputTokens);
 
 	std::expected<std::vector<Token>, InterpreterError> ExtractBetweenParenthesis(int position, std::vector<Token>& inputTokens);
+	std::expected<std::vector<Token>, InterpreterError> ExtractBetweenKeywords(SQLKeyword from, SQLKeyword to, std::vector<Token>& inputTokens);
 };

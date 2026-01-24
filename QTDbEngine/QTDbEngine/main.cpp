@@ -6,7 +6,7 @@
 
 const std::string ENGINE_VERSION = "0.0.1";
 
-CLIMenu* InitializeMenu(Engine& engine)
+CLIMenu InitializeMenu(Engine& engine)
 {
 	MenuPage rootPage(std::vector<MenuEntry> {
 		MenuEntry("1.List Databases", [&engine]() {
@@ -27,19 +27,19 @@ CLIMenu* InitializeMenu(Engine& engine)
 			std::string dbName;
 			std::cin >> dbName;
 
-			DatabaseQueryStatusCode dbCreationResult = engine.CreateNewDatabase(dbName);
+			std::tuple<DatabaseQueryStatusCode, std::optional<std::string>> dbCreationResult = engine.CreateNewDatabase(dbName);
 
-			if (dbCreationResult == DatabaseQueryStatusCode::OK) {
+			if (std::get<0>(dbCreationResult) == DatabaseQueryStatusCode::OK) {
 				std::cout << "Database have been created successfully." << std::endl;
 				return;
 			}
 
-			if (dbCreationResult == DatabaseQueryStatusCode::FAILED) {
+			if (std::get<0>(dbCreationResult) == DatabaseQueryStatusCode::FAILED) {
 				std::cout << "Unknown Error have occured. Please try again." << std::endl;
 				return;
 			}
 
-			if (dbCreationResult == DatabaseQueryStatusCode::DATABASE_ALREADY_EXISTS) {
+			if (std::get<0>(dbCreationResult) == DatabaseQueryStatusCode::DATABASE_ALREADY_EXISTS) {
 				std::cout << "Database " << dbName << " already exists." << std::endl;
 				return;
 			}
@@ -49,15 +49,30 @@ CLIMenu* InitializeMenu(Engine& engine)
 			std::cout << "Enter your sql here: ";
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
 			std::getline(std::cin, sql);
-			DatabaseQueryStatusCode queryResult = engine.ExecuteRawSql(sql);
+			std::tuple<DatabaseQueryStatusCode, std::optional<std::string>> queryResult = engine.ExecuteRawSql(sql);
 
-			if (queryResult == DatabaseQueryStatusCode::OK) {
+			if (std::get<0>(queryResult) == DatabaseQueryStatusCode::OK) {
 				std::cout << "Query executed successfully!" << std::endl;
 				return;
 			}
 
-			if (queryResult == DatabaseQueryStatusCode::INVALID_QUERY) {
+			if (std::get<0>(queryResult) == DatabaseQueryStatusCode::INVALID_QUERY) {
 				std::cout << "Failed to interpret query!" << std::endl;
+				return;
+			}
+
+			if (std::get<0>(queryResult) == DatabaseQueryStatusCode::TABLE_ALREADY_EXISTS) {
+				std::cout << "Table already exists" << std::endl;
+				return;
+			}
+
+			if (std::get<0>(queryResult) == DatabaseQueryStatusCode::DATABASE_ALREADY_EXISTS) {
+				std::cout << "Database already exists!" << std::endl;
+				return;
+			}
+
+			if (std::get<0>(queryResult) == DatabaseQueryStatusCode::DATABASE_NOT_EXISTS) {
+				std::cout << "Database does not exist!" << std::endl;
 				return;
 			}
 
@@ -71,7 +86,7 @@ CLIMenu* InitializeMenu(Engine& engine)
 
 	cliMenu.ShowMenu();
 
-	return &cliMenu;
+	return cliMenu;
 }
 
 int main(int argc, char* argv[])
@@ -80,7 +95,7 @@ int main(int argc, char* argv[])
 
 	engine.Initialize();
 
-	CLIMenu* cliMenu = InitializeMenu(engine);
+	CLIMenu cliMenu = InitializeMenu(engine);
 
-	cliMenu->ShowMenu();
+	cliMenu.ShowMenu();
 }

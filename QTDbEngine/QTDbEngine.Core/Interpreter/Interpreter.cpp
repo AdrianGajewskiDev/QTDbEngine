@@ -11,11 +11,16 @@ Interpreter::~Interpreter() {
 
 std::expected<InterpreterResult, InterpreterError> Interpreter::InterpretQuery(std::string& sqlQuery)
 {
-	std::expected<std::vector<Token>, TokenizerError> tokens = m_tokenizer->Tokenize(sqlQuery);
+	try {
+		std::expected<std::vector<Token>, TokenizerError> tokens = m_tokenizer->Tokenize(sqlQuery);
 
-	if (!tokens) {
+		if (!tokens) {
+			return std::unexpected(InterpreterError::FAILED_TO_PARSE);
+		}
+
+		return m_parser->ParseTokens(tokens.value());
+	}
+	catch (std::exception) {
 		return std::unexpected(InterpreterError::FAILED_TO_PARSE);
 	}
-
-	return m_parser->ParseTokens(tokens.value());
 }

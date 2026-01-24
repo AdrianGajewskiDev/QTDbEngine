@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <tuple>
 #include "../Logger/Logger.h"
 #include "../Interpreter/Tokenizer.h"
 #include "../Interpreter/Parser.h"
@@ -15,14 +16,14 @@ public:
 	~Engine();
 public:
 	void Initialize();
-	DatabaseQueryStatusCode CreateNewDatabase(std::string& dbName);
-	DatabaseQueryStatusCode CreateNewTable(std::string& dbName, std::string tableName, std::vector<Column>& columns);
-	DatabaseQueryStatusCode ExecuteRawSql(std::string& rawSql);
+	std::tuple<DatabaseQueryStatusCode, std::optional<std::string>> CreateNewDatabase(std::string& dbName);
+	std::tuple<DatabaseQueryStatusCode, std::optional<std::string>> CreateNewTable(std::string& dbName, const char* tableName, std::vector<Column>& columns);
+	std::tuple<DatabaseQueryStatusCode, std::optional<std::string>> ExecuteRawSql(std::string& rawSql);
 	std::vector<std::string> ListDatabases();
 private:
 	std::string m_version;
 	Logger* m_logger;
 	Interpreter* m_interpreter;
 private:
-	DatabaseQueryStatusCode ProcessParserResult(InterpreterResult& parserResult);
+	std::tuple<DatabaseQueryStatusCode, std::optional<std::string>> ProcessParserResult(InterpreterResult& parserResult);
 };

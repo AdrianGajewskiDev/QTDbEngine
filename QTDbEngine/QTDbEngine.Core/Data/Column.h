@@ -15,6 +15,6 @@ public:
 struct Table {
 public:
 	std::string DatabaseName;
-	std::string TableName;
+	const char* TableName;
 	std::vector<Column> Columns;
 };

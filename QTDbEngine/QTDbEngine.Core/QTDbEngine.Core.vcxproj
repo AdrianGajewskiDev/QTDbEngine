@@ -139,6 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Binary\Converter.h" />
+    <ClInclude Include="Binary\Layout.h" />
+    <ClInclude Include="Binary\Reader\BinaryReader.h" />
+    <ClInclude Include="Binary\Writer\BinaryWriter.h" />
     <ClInclude Include="Data\Column.h" />
     <ClInclude Include="Interpreter\Interpreter.h" />
     <ClInclude Include="Interpreter\Models\Models.h" />
@@ -155,6 +159,8 @@
     <ClInclude Include="Interpreter\Tokenizer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Binary\Version.h" />
+    <ClCompile Include="Binary\Writer\BinaryWriter.cpp" />
     <ClCompile Include="Interpreter\Interpreter.cpp" />
     <ClCompile Include="Layers\DatabaseStorageLayer.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
